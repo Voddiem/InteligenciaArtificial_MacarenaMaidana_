@@ -69,10 +69,6 @@ public class EnemyController : MonoBehaviour
         fsm.UpdateState(canSeePlayer);
        
     }
-    public void TestArrive()
-    {
-        Move(arrive.GetSteering(transform));
-    }
 
     private void Move(Vector3 direction)
     {
