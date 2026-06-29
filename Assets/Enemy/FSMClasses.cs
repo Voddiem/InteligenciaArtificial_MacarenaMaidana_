@@ -8,6 +8,7 @@ public class FSMClasses : MonoBehaviour
     private PatrolState patrolState;
     private PursuitState pursuitState;
     private AttackState attackState;
+    private SearchState searchState;
 
     private EnemyController enemy;
 
@@ -29,12 +30,17 @@ public class FSMClasses : MonoBehaviour
         patrolState = new PatrolState(this);
         pursuitState = new PursuitState(this);
         attackState = new AttackState(this, self, player);
+        searchState = new SearchState(this, self, player);
 
         currentState = patrolState;
     }
 
     public void UpdateState(bool canSeePlayer)
     {
+        if (canSeePlayer)
+        {
+            enemy.LastKnownPlayerPosition = player.position;
+        }
         currentState.Update(canSeePlayer);
     }
 
@@ -60,6 +66,10 @@ public class FSMClasses : MonoBehaviour
     public void ChangeToAttack()
     {
         ChangeState(attackState);
+    }
+    public void ChangeToSearch()
+    {
+        ChangeState(searchState);
     }
 }
 
@@ -109,6 +119,8 @@ public class PursuitState : State
         Debug.Log("Entro a Pursuit");
 
         fsm.animator.SetInteger("State", 1);
+
+        fsm.GetComponent<EnemyController>().CalculatePath();
     }
     public override void Exit()
     {
@@ -125,10 +137,10 @@ public class PursuitState : State
 
         if (!canSeePlayer)
         {
-            fsm.ChangeToPatrol();
+            fsm.ChangeToSearch();
         }
-        else if (dist < 2f)
-        {
+        else if (dist < enemy.AttackDistance)
+            {
             fsm.ChangeToAttack();
         }
     }
@@ -162,14 +174,15 @@ public class AttackState : State
 
         if (!canSeePlayer)
         {
-            fsm.ChangeToPatrol();
+            fsm.ChangeToSearch();
             return;
         }
 
-        if (dist > 2f)
+        var enemy = fsm.GetComponent<EnemyController>();
+
+        if (dist > enemy.AttackDistance)
         {
             fsm.ChangeToPursuit();
-            return;
         }
 
         timer += Time.deltaTime;
@@ -187,5 +200,68 @@ public class AttackState : State
 
         fsm.animator.SetTrigger("Attack");
 
+    }
+
+
+
+    }
+public class SearchState : State
+{
+    public override void Update(bool canSeePlayer)
+    {
+        if (canSeePlayer)
+        {
+            fsm.ChangeToPursuit();
+            return;
+        }
+        if (!reachedDestination)
+        {
+            enemy.PursuitPlayer();
+
+            if (enemy.PathFinished())
+            {
+                reachedDestination = true;
+            }
+
+            return;
+        }
+
+        searchTimer += Time.deltaTime;
+
+        enemy.transform.Rotate(
+    Vector3.up * 90f * Time.deltaTime);
+
+        if (searchTimer >= 3f)
+        {
+            fsm.ChangeToPatrol();
+        }
+
+
+    }
+    public override void Enter()
+    {
+        Debug.Log("Buscando jugador");
+
+        searchTimer = 0;
+
+        reachedDestination = false;
+
+        enemy.CalculatePath(enemy.LastKnownPlayerPosition);
+    }
+    public override void Exit()
+    {
+        Debug.Log("Salgo Search");
+    }
+
+    private EnemyController enemy;
+
+    private float searchTimer;
+
+    private bool reachedDestination;
+
+    public SearchState(FSMClasses fsm, Transform self, Transform player)
+        : base(fsm)
+    {
+        enemy = fsm.GetComponent<EnemyController>();
     }
 }
