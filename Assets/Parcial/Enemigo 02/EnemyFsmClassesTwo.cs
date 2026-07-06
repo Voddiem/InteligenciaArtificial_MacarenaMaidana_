@@ -3,7 +3,7 @@ using UnityEngine.XR;
 
 public class FSMClasses : MonoBehaviour
 {
-    public State currentState {  get; private set; }
+    public State currentState { get; private set; }
 
     private PatrolState patrolState;
     private PursuitState pursuitState;
@@ -46,16 +46,16 @@ public class FSMClasses : MonoBehaviour
 
     public void ChangeState(State newState)
     {
-        if(currentState == newState)
+        if (currentState == newState)
             return;
-    
+
 
         currentState.Exit();
         currentState = newState;
         currentState.Enter();
 
     }
-    public void ChangeToPatrol() 
+    public void ChangeToPatrol()
     {
         ChangeState(patrolState);
     }
@@ -81,8 +81,8 @@ public abstract class State
         this.fsm = fsm;
     }
 
-    public virtual void Enter(){}
-    public virtual void Exit(){}
+    public virtual void Enter() { }
+    public virtual void Exit() { }
 
     public abstract void Update(bool canSeePlayer);
 }
@@ -137,10 +137,11 @@ public class PursuitState : State
 
         if (!canSeePlayer)
         {
+            Debug.Log("Perdí al jugador");
             fsm.ChangeToSearch();
         }
         else if (dist < enemy.AttackDistance)
-            {
+        {
             fsm.ChangeToAttack();
         }
     }
@@ -204,13 +205,14 @@ public class AttackState : State
 
 
 
-    }
+}
 public class SearchState : State
 {
     public override void Update(bool canSeePlayer)
     {
         if (canSeePlayer)
         {
+            Debug.Log("Lo encontré otra vez");
             fsm.ChangeToPursuit();
             return;
         }

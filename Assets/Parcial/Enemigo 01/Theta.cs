@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AStar : MonoBehaviour
+public class Theta : MonoBehaviour
 {
     private GridManager grid;
 
@@ -11,6 +11,8 @@ public class AStar : MonoBehaviour
     }
     public List<Node> FindPath(Vector3 startPos, Vector3 targetPos)
     {
+
+
         Node startNode = grid.NodeFromWorldPoint(startPos);
         Node targetNode = grid.NodeFromWorldPoint(targetPos);
 
@@ -18,6 +20,15 @@ public class AStar : MonoBehaviour
         HashSet<Node> closedSet = new HashSet<Node>();
 
         openSet.Add(startNode);
+
+        foreach (Node node in grid.Grid)
+        {
+            node.gCost = int.MaxValue;
+            node.hCost = 0;
+            node.parent = null;
+        }
+
+        startNode.gCost = 0;
 
 
         while (openSet.Count > 0)
@@ -45,19 +56,8 @@ public class AStar : MonoBehaviour
                 if (!neighbour.walkable || closedSet.Contains(neighbour))
                     continue;
 
-                int newCostToNeighbour = currentNode.gCost + GetDistance(currentNode, neighbour);
+                UpdateVertex(currentNode, neighbour, targetNode, openSet);
 
-                if (newCostToNeighbour < neighbour.gCost || !openSet.Contains(neighbour))
-                {
-                    neighbour.gCost = newCostToNeighbour;
-                    neighbour.hCost = GetDistance(neighbour, targetNode);
-                    neighbour.parent = currentNode;
-
-                    if (!openSet.Contains(neighbour))
-                    {
-                        openSet.Add(neighbour);
-                    }
-                }
             }
         }
         return null;
@@ -71,6 +71,46 @@ public class AStar : MonoBehaviour
             return 14 * dstY + 10 * (dstX - dstY);
 
         return 14 * dstX + 10 * (dstY - dstX);
+    }
+
+    private bool LineOfSight(Node from, Node to)
+    {
+        Vector3 start = from.worldPosition + Vector3.up * 0.5f;
+        Vector3 end = to.worldPosition + Vector3.up * 0.5f;
+
+        Vector3 direction = end - start;
+        float distance = direction.magnitude;
+
+        return !Physics.Raycast( start, direction.normalized,distance, grid.ObstacleMask);
+    }
+
+    private void UpdateVertex(Node currentNode, Node neighbour, Node targetNode, List<Node> openSet)
+    {
+        Node bestParent = currentNode;
+        int newCost;
+
+        if (currentNode.parent != null &&
+            LineOfSight(currentNode.parent, neighbour))
+        {
+            bestParent = currentNode.parent;
+
+            newCost = bestParent.gCost + GetDistance(bestParent, neighbour);
+        }
+        else
+        {
+            newCost = currentNode.gCost + GetDistance(currentNode, neighbour);
+        }
+
+        if (newCost < neighbour.gCost || !openSet.Contains(neighbour))
+        {
+            neighbour.gCost = newCost;
+            neighbour.hCost = GetDistance(neighbour, targetNode);
+
+            neighbour.parent = bestParent;
+
+            if (!openSet.Contains(neighbour))
+                openSet.Add(neighbour);
+        }
     }
     private List<Node> RetracePath(Node startNode, Node endNode)
     {
@@ -90,3 +130,7 @@ public class AStar : MonoBehaviour
     }
 
 }
+
+
+
+

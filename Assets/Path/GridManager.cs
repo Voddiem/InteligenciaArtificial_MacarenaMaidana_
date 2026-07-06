@@ -6,6 +6,7 @@ public class GridManager : MonoBehaviour
 {
     [Header("Grid")]
     public LayerMask obstacleMask;
+    public LayerMask ObstacleMask => obstacleMask;
 
     public Vector2 gridWorldSize = new Vector2(20, 20);
 
@@ -18,6 +19,7 @@ public class GridManager : MonoBehaviour
     int gridSizeX;
     int gridSizeY;
 
+    public Node[,] Grid => grid;
     private void OnValidate()
     {
         nodeDiameter = nodeRadius * 2;
@@ -50,17 +52,9 @@ public class GridManager : MonoBehaviour
                     + Vector3.forward * (y * nodeDiameter + nodeRadius);
 
                 bool walkable =
-                    !Physics.CheckSphere(
-                        worldPoint,
-                        nodeRadius,
-                        obstacleMask);
+                    !Physics.CheckSphere(worldPoint,nodeRadius,obstacleMask);
 
-                grid[x, y] =
-                    new Node(
-                        walkable,
-                        worldPoint,
-                        x,
-                        y);
+                grid[x, y] = new Node(walkable,worldPoint,x, y);
             }
         }
     }
@@ -124,6 +118,8 @@ public class GridManager : MonoBehaviour
 
         return neighbours;
     }
+
+
 
 }
 

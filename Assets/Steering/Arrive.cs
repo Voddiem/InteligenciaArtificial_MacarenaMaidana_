@@ -6,7 +6,7 @@ public class ArriveBehaviour : SteeringBehaviour
 
     private float slowRadius;
 
-    public ArriveBehaviour(float slowRadius = 2f)
+    public ArriveBehaviour(float slowRadius = 0f)
     {
         this.slowRadius = slowRadius;
     }
@@ -26,7 +26,7 @@ public class ArriveBehaviour : SteeringBehaviour
         if (distance < 0.05f)
             return Vector3.zero;
 
-        float speedFactor = 1f;
+        float speedFactor = 0f;
 
         if (distance < slowRadius)
             speedFactor = distance / slowRadius;

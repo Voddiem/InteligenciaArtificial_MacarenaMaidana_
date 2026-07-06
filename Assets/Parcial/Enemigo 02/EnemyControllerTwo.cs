@@ -5,7 +5,7 @@ using UnityEngine.Rendering;
 
 public class EnemyController : MonoBehaviour
 {
-        public enum PatrolType
+    public enum PatrolType
     {
         Waypoints,
         Wander
@@ -67,7 +67,7 @@ public class EnemyController : MonoBehaviour
             && los.CheckObstacles(transform, player);
 
         fsm.UpdateState(canSeePlayer);
-       
+
     }
 
     private void Move(Vector3 direction)
@@ -181,12 +181,19 @@ public class EnemyController : MonoBehaviour
                    transform.position,
                    currentPath[currentPath.Count - 1].worldPosition) < 0.2f;
     }
+
+    private void OnDrawGizmos()
+    {
+        if (currentPath == null)
+            return;
+
+        Gizmos.color = Color.green;
+
+        for (int i = 0; i < currentPath.Count - 1; i++)
+        {
+            Gizmos.DrawLine(
+                currentPath[i].worldPosition,
+                currentPath[i + 1].worldPosition);
+        }
+    }
 }
-
-
-
-
-
-
-
-

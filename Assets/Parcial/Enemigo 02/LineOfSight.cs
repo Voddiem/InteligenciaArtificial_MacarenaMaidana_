@@ -1,3 +1,4 @@
+
 using UnityEditor.UI;
 using UnityEngine;
 
@@ -22,14 +23,18 @@ public class LineOfSight : MonoBehaviour
 
     public bool CheckAngle(Transform self, Transform target)
     {
-        Vector3 dir = target.position - self.position;
+        Vector3 dir = (target.position + Vector3.up * 1.5f) - (self.position + Vector3.up * 1.5f);
         return Vector3.Angle(self.forward, dir) < angle / 2;
     }
 
     public bool CheckObstacles(Transform self, Transform target)
     {
-        Vector3 dir = target.position - self.position;
-        return !Physics.Raycast(self.position, dir.normalized, dir.magnitude, obs);
+        Vector3 origin = self.position + Vector3.up * 1.5f;
+        Vector3 targetPoint = target.position + Vector3.up * 1.5f;
+
+        Vector3 dir = targetPoint - origin;
+
+        return !Physics.Raycast(origin, dir.normalized, dir.magnitude, obs);
     }
 
     private void OnDrawGizmosSelected()
@@ -40,3 +45,4 @@ public class LineOfSight : MonoBehaviour
         Gizmos.DrawRay(transform.position, transform.forward * distance);
     }
 }
+
